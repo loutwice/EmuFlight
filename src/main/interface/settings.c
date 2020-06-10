@@ -512,7 +512,7 @@ const clivalue_t valueTable[] = {
     { "yaw_spin_threshold",         VAR_UINT16 | MASTER_VALUE, .config.minmax = { 500,  1950 }, PG_GYRO_CONFIG, offsetof(gyroConfig_t, yaw_spin_threshold) },
 #endif
 
-#if defined(GYRO_USES_SPI) && defined(USE_32K_CAPABLE_GYRO)
+#if defined(GYRO_USES_SPI) && defined(USE_32K_CAPABLE_GYRO) || defined(USE_GYRO_IMUF9001)  
     { "gyro_use_32khz",             VAR_UINT8  | MASTER_VALUE | MODE_LOOKUP, .config.lookup = { TABLE_OFF_ON }, PG_GYRO_CONFIG, offsetof(gyroConfig_t, gyro_use_32khz) },
 #endif
 #ifdef USE_DUAL_GYRO
@@ -953,6 +953,8 @@ const clivalue_t valueTable[] = {
 #ifdef USE_ADC_INTERNAL
     { "osd_warn_core_temp",         VAR_UINT16  | MASTER_VALUE | MODE_BITSET, .config.bitpos = OSD_WARNING_CORE_TEMPERATURE, PG_OSD_CONFIG, offsetof(osdConfig_t, enabledWarnings)},
 #endif
+    { "osd_warn_rc_smoothing",      VAR_UINT16  | MASTER_VALUE | MODE_BITSET, .config.bitpos = OSD_WARNING_RC_SMOOTHING,     PG_OSD_CONFIG, offsetof(osdConfig_t, enabledWarnings)},
+    { "osd_warn_dji",               VAR_UINT16  | MASTER_VALUE | MODE_BITSET, .config.bitpos = OSD_WARNING_DJI,              PG_OSD_CONFIG, offsetof(osdConfig_t, enabledWarnings)},
 
     { "osd_rssi_alarm",             VAR_UINT8  | MASTER_VALUE, .config.minmax = { 0, 100 }, PG_OSD_CONFIG, offsetof(osdConfig_t, rssi_alarm) },
     { "osd_cap_alarm",              VAR_UINT16 | MASTER_VALUE, .config.minmax = { 0, 20000 }, PG_OSD_CONFIG, offsetof(osdConfig_t, cap_alarm) },
