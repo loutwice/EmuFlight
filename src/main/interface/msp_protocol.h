@@ -345,3 +345,6 @@
 #define MSP_RTC                  247    //out message         Gets the RTC clock
 #define MSP_SET_BOARD_INFO       248    //in message          Sets the board information for this board
 #define MSP_SET_SIGNATURE        249    //in message          Sets the signature of the board and serial number
+
+#define MSP_ALTI_LIMIT           256
+#define MSP_SET_ALTI_LIMIT       257
