@@ -1399,17 +1399,6 @@ bool mspProcessOutCommand(uint8_t cmdMSP, sbuf_t *dst)
 #endif
 //#endif
 
-
-#ifdef USE_BARO
-  case MSP_ALTI_LIMIT :
-    sbufWriteU8(dst, mixerConfigMutable()->altiLimiter);
-    sbufWriteU16(dst, mixerConfigMutable()->alti_cutoff);
-    sbufWriteU16(dst, mixerConfigMutable()->alti_start_lim);
-  break;
-#endif
-
-
-
     case MSP_PID_ADVANCED:
         sbufWriteU16(dst, 0);
         sbufWriteU16(dst, 0);
@@ -2050,14 +2039,6 @@ mspResult_e mspProcessInCommand(uint8_t cmdMSP, sbuf_t *src)
 #endif
         break;
 //#endif
-
-  #ifdef USE_BARO
-  case MSP_SET_ALTI_LIMIT :
-    mixerConfigMutable()->altiLimiter = sbufReadU8(src);
-    mixerConfigMutable()->alti_cutoff = sbufReadU16(src);
-    mixerConfigMutable()->alti_start_lim = sbufReadU16(src);
-    break;
-  #endif
 
     case MSP_SET_PID_ADVANCED:
         sbufReadU16(src);
