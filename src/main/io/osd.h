@@ -199,6 +199,7 @@ uint16_t distance_alarm;
 PG_DECLARE(osdConfig_t, osdConfig);
 
 extern timeUs_t resumeRefreshAt;
+extern char djiWarningBuffer[12];
 
 struct displayPort_s;
 void osdInit(struct displayPort_s *osdDisplayPort);
@@ -209,3 +210,4 @@ void osdStatSetState(uint8_t statIndex, bool enabled);
 bool osdStatGetState(uint8_t statIndex);
 void osdWarnSetState(uint8_t warningIndex, bool enabled);
 bool osdWarnGetState(uint8_t warningIndex);
+bool osdWarnDjiEnabled(void);

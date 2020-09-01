@@ -58,6 +58,9 @@
 #include "drivers/flash.h"
 #include "drivers/max7456_symbols.h"
 #include "drivers/sdcard.h"
+#ifdef USE_VCP
+#include "drivers/serial_usb_vcp.h"
+#endif
 #include "drivers/time.h"
 
 #include "fc/config.h"
@@ -144,6 +147,8 @@ static statistic_t stats;
 
 timeUs_t resumeRefreshAt = 0;
 #define REFRESH_1S    1000 * 1000
+
+char djiWarningBuffer[12];
 
 static uint8_t armState;
 static bool lastArmState;
@@ -279,9 +284,12 @@ static void osdFormatAltitudeString(char * buff, int altitude)
 {
     const int alt = osdGetMetersToSelectedUnit(altitude) / 10;
 
-    tfp_sprintf(buff, "%c%5d %c", SYM_ALT, alt, osdGetMetersToSelectedUnitSymbol());
-    buff[6] = buff[5];
-    buff[5] = '.';
+    int pos = 0;
+    buff[pos++] = SYM_ALT;
+    if (alt < 0) {
+        buff[pos++] = '-';
+    }
+    tfp_sprintf(buff + pos, "%01d.%01d%c", abs(alt) / 10 , abs(alt) % 10, osdGetMetersToSelectedUnitSymbol());
 }
 
 static void osdFormatPID(char * buff, const char * label, const pidf_t * pid)
@@ -404,15 +412,14 @@ static void osdFormatMessage(char *buff, size_t size, const char *message)
         memcpy(buff, message, strlen(message));
     }
 
-    // Save warning into pilotConfig->warning, used for DJI OSD
-    // stored into another field for saving original pilot name
-    if (osdWarnGetState(OSD_WARNING_DJI)) {
-        char warning[OSD_FORMAT_MESSAGE_BUFFER_SIZE] = " ";
-        osdConfigMutable()->item_pos[OSD_CRAFT_NAME] = osdConfig()->item_pos[OSD_WARNINGS]; // Change position of craft name
+    // Write warning for DJI
+    if (osdWarnDjiEnabled()) {
         if (message) {
-            memcpy(warning, message, OSD_WARNINGS_MAX_SIZE);
+            tfp_sprintf(djiWarningBuffer, message);
+        } else {
+            // Set an empty string, because if the warning is NULL, DJI will display CRAFT_NAME
+            tfp_sprintf(djiWarningBuffer, "           ");
         }
-        memcpy(pilotConfigMutable()->warning, warning, OSD_WARNINGS_MAX_SIZE);
     }
 
     // Ensure buff is zero terminated
@@ -461,6 +468,15 @@ void osdWarnSetState(uint8_t warningIndex, bool enabled)
 bool osdWarnGetState(uint8_t warningIndex)
 {
     return osdConfig()->enabledWarnings & (1 << warningIndex);
+}
+
+bool osdWarnDjiEnabled(void)
+{
+    return osdWarnGetState(OSD_WARNING_DJI)
+#ifdef USE_VCP
+                && !usbVcpIsConnected()
+#endif
+    ;
 }
 
 static bool osdDrawSingleElement(uint8_t item)
@@ -1507,7 +1523,8 @@ static void osdShowStats(uint16_t endBatteryVoltage)
     }
 
     if (osdStatGetState(OSD_STAT_MAX_ALTITUDE)) {
-        osdFormatAltitudeString(buff, stats.max_altitude);
+        const int alt = osdGetMetersToSelectedUnit(stats.max_altitude) / 10;
+        tfp_sprintf(buff, "%d.%d%c", abs(alt) / 10, abs(alt) % 10, osdGetMetersToSelectedUnitSymbol());
         osdDisplayStatisticLabel(top++, "MAX ALTITUDE", buff);
     }
 
